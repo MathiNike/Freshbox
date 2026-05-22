@@ -1,0 +1,17 @@
+@import "tailwindcss";
+
+:root {
+  --color-primary: #10b981; /* Emerald 500 */
+  --color-primary-dark: #059669; /* Emerald 600 */
+  --color-primary-light: #34d399; /* Emerald 400 */
+  --color-secondary: #0f172a; /* Slate 900 */
+  --color-background: #f8fafc; /* Slate 50 */
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-secondary);
+  font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
