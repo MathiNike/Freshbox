@@ -43,10 +43,26 @@ export default function AlmacenDashboard() {
     }
   }, [profile, loading, navigate]);
 
-  // Fetch de pedidos pendientes con JOINs
+  // Fetch de pedidos con suscripción Realtime
   useEffect(() => {
     if (profile?.rol === 'Almacen') {
       fetchPedidosPendientes();
+      fetchHistorialDespachos();
+
+      const channel = supabase.channel('almacen-pedidos')
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'pedido' },
+          () => {
+            fetchPedidosPendientes();
+            fetchHistorialDespachos();
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
     }
   }, [profile]);
 
