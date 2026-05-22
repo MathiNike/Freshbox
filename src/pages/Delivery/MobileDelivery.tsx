@@ -36,6 +36,20 @@ export default function MobileDelivery() {
   useEffect(() => {
     if (profile?.rol === 'Repartidor') {
       fetchPedidosAsignados();
+
+      const channel = supabase.channel('repartidor-pedidos')
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'pedido' },
+          () => {
+            fetchPedidosAsignados();
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
     }
   }, [profile]);
 
