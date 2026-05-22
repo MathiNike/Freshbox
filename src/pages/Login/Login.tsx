@@ -1,15 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Leaf, Lock, Mail, Eye, EyeOff, Truck, Clock, MapPin, User as UserIcon } from 'lucide-react';
+import { Leaf, Lock, Mail, Eye, EyeOff, Truck, Clock, MapPin } from 'lucide-react';
 import { supabase } from '../../services/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 
 export default function Login() {
-  const [isRegistering, setIsRegistering] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [nombre, setNombre] = useState('');
-  const [rol, setRol] = useState<'Vendedor' | 'Supervisor' | 'Repartidor' | 'Almacen' | 'Administrador'>('Supervisor');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loadingMsg, setLoadingMsg] = useState('');
@@ -35,29 +32,6 @@ export default function Login() {
     setLoadingMsg('Conectando...');
 
     try {
-      if (isRegistering) {
-        // 1. Register in Auth con metadata (el trigger SQL hará el insert en public.usuario)
-        const { data: authData, error: authError } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            data: {
-              nombre: nombre,
-              rol: rol
-            }
-          }
-        });
-
-        if (authError) throw authError;
-
-        // Mostrar alerta si requiere confirmación de email
-        if (authData.user && authData.user.identities && authData.user.identities.length === 0) {
-           alert('Registro exitoso. ¡Revisa tu correo para confirmar la cuenta antes de iniciar sesión!');
-        } else {
-           alert('Registro exitoso. ¡Revisa tu correo para confirmar si es necesario o intenta iniciar sesión!');
-        }
-        
-      } else {
         // Login
         const { error: loginError } = await supabase.auth.signInWithPassword({
           email,
@@ -65,7 +39,6 @@ export default function Login() {
         });
 
         if (loginError) throw loginError;
-      }
     } catch (err: any) {
       setError(err.message || 'Error de autenticación');
     } finally {
@@ -162,8 +135,8 @@ export default function Login() {
                 <p className="text-[10px] font-bold text-blue-500 tracking-wider">Express S.A.C.</p>
               </div>
             </div>
-            <h2 className="text-2xl font-bold text-slate-800 mb-1">{isRegistering ? 'Crear Cuenta' : 'Bienvenido'}</h2>
-            <p className="text-sm text-slate-500">{isRegistering ? 'Regístrate para continuar' : 'Inicia sesión para acceder a tu cuenta'}</p>
+            <h2 className="text-2xl font-bold text-slate-800 mb-1">Bienvenido</h2>
+            <p className="text-sm text-slate-500">Inicia sesión para acceder a tu cuenta</p>
           </div>
 
           {error && (
@@ -173,39 +146,6 @@ export default function Login() {
           )}
 
           <form onSubmit={handleAuth} className="space-y-5">
-            {isRegistering && (
-              <>
-                <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-1.5">Nombre Completo</label>
-                  <div className="relative">
-                    <input 
-                      type="text" 
-                      className="w-full px-4 py-3 rounded-xl border-none bg-slate-50 focus:bg-white focus:ring-2 focus:ring-[#3A5D44] transition-all pl-11 text-sm font-medium text-slate-800" 
-                      placeholder="Juan Pérez"
-                      value={nombre}
-                      onChange={(e) => setNombre(e.target.value)}
-                      required
-                    />
-                    <UserIcon className="absolute left-4 top-3.5 text-slate-400" size={18} />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-1.5">Rol en el Sistema</label>
-                  <select 
-                    className="w-full px-4 py-3 rounded-xl border-none bg-slate-50 focus:bg-white focus:ring-2 focus:ring-[#3A5D44] transition-all text-sm font-medium text-slate-800"
-                    value={rol}
-                    onChange={(e) => setRol(e.target.value as any)}
-                  >
-                    <option value="Supervisor">Supervisor de Operaciones</option>
-                    <option value="Repartidor">Repartidor</option>
-                    <option value="Vendedor">Vendedor</option>
-                    <option value="Almacen">Almacén</option>
-                    <option value="Administrador">Administrador</option>
-                  </select>
-                </div>
-              </>
-            )}
-
             <div>
               <label className="block text-sm font-bold text-slate-700 mb-1.5">Correo Electrónico</label>
               <div className="relative">
@@ -248,22 +188,9 @@ export default function Login() {
               disabled={!!loadingMsg}
               className="bg-[#fbbd23] hover:bg-[#f5a50b] text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-amber-200 active:scale-95 w-full mt-6 text-sm transition-all disabled:opacity-50"
             >
-              {loadingMsg ? loadingMsg : (isRegistering ? 'Crear Cuenta' : 'Iniciar Sesión')}
+              {loadingMsg ? loadingMsg : 'Iniciar Sesión'}
             </button>
           </form>
-
-          <div className="mt-8 text-center border-t border-slate-100 pt-6">
-            <p className="text-sm text-slate-500 font-medium">
-              {isRegistering ? '¿Ya tienes una cuenta?' : '¿No tienes una cuenta?'} {' '}
-              <button 
-                type="button" 
-                onClick={() => setIsRegistering(!isRegistering)}
-                className="text-[#3A5D44] font-bold hover:underline transition-all"
-              >
-                {isRegistering ? 'Inicia sesión aquí' : 'Regístrate aquí'}
-              </button>
-            </p>
-          </div>
 
           <div className="mt-8 text-center">
             <p className="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Servicio de entregas en Iquitos, Perú</p>
