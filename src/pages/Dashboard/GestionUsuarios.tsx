@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Plus, Pencil, LogOut, X, Loader2, Users, Search, Package, Power, PowerOff, UserCircle2, LayoutList } from 'lucide-react';
+import { Plus, Pencil, LogOut, X, Loader2, Users, Search, Package, Power, PowerOff, UserCircle2, LayoutList, Key } from 'lucide-react';
 import { supabase } from '../../services/supabase';
 import type { Usuario, UserRole } from '../../services/supabase';
 import { useAuth } from '../../contexts/AuthContext';
@@ -107,6 +107,36 @@ export default function GestionUsuarios() {
       alert(`Error al actualizar: ${error.message}`);
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleResetPassword = async (usuario: Usuario) => {
+    const newPassword = window.prompt(`Escribe la nueva contraseña para ${usuario.nombre} (mínimo 6 caracteres):`);
+    
+    if (newPassword === null) return; // El usuario canceló
+    if (newPassword.length < 6) {
+      alert('La contraseña debe tener al menos 6 caracteres.');
+      return;
+    }
+
+    if (!window.confirm(`¿Estás seguro de que deseas cambiar la contraseña de ${usuario.nombre}?`)) return;
+
+    try {
+      const { data, error: invokeError } = await supabase.functions.invoke('crear-usuario-admin', {
+        body: {
+          action: 'update_password',
+          userId: usuario.id,
+          password: newPassword
+        }
+      });
+
+      if (invokeError) throw invokeError;
+      if (data?.error) throw new Error(data.error);
+
+      alert(`Contraseña de ${usuario.nombre} restablecida con éxito.`);
+    } catch (error: any) {
+      console.error('Error al restablecer contraseña:', error.message);
+      alert(`Error al restablecer contraseña: ${error.message}`);
     }
   };
 
@@ -314,6 +344,13 @@ export default function GestionUsuarios() {
                           className="text-violet-600 hover:text-violet-800 font-medium text-sm bg-violet-50 px-3 py-1.5 rounded-lg transition-colors inline-flex items-center gap-1"
                         >
                           <Pencil size={14} /> Editar
+                        </button>
+                        <button
+                          onClick={() => handleResetPassword(usuario)}
+                          className="text-blue-600 hover:text-blue-800 font-medium text-sm bg-blue-50 px-3 py-1.5 rounded-lg transition-colors inline-flex items-center gap-1"
+                          title="Restablecer Contraseña"
+                        >
+                          <Key size={14} /> Clave
                         </button>
                         <button
                           onClick={() => handleToggleEstado(usuario)}

@@ -48,8 +48,26 @@ serve(async (req: Request) => {
     }
 
     // 2. Extraer datos del body
-    const { email, password, nombre_completo, rol } = await req.json()
+    const { action = 'create', userId, email, password, nombre_completo, rol } = await req.json()
 
+    if (action === 'update_password') {
+      if (!userId || !password) {
+        throw new Error('Faltan campos obligatorios para actualizar contraseña (userId, password)')
+      }
+
+      const { data: userData, error: updateError } = await supabaseClient.auth.admin.updateUserById(userId, {
+        password: password
+      })
+
+      if (updateError) throw updateError
+
+      return new Response(
+        JSON.stringify({ message: 'Contraseña actualizada exitosamente', user: userData.user }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+      )
+    }
+
+    // Flujo normal de creación (action === 'create')
     if (!email || !password || !nombre_completo || !rol) {
       throw new Error('Faltan campos obligatorios (email, password, nombre_completo, rol)')
     }
