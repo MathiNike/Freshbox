@@ -112,35 +112,35 @@ export default function VendedorDashboard() {
   // Funciones del Carrito
 
   const addToCartDirect = (prod: Producto) => {
-    const existing = cart.find(item => item.producto.id === prod.id);
-    if (existing) {
-      const currentQ = typeof existing.cantidad === 'number' ? existing.cantidad : 0;
-      if (currentQ + 1 > prod.stock) {
-        alert(`Stock insuficiente. El máximo disponible para ${prod.nombre} es ${prod.stock}.`);
-        return;
+    setCart(prevCart => {
+      const existing = prevCart.find(item => item.producto.id === prod.id);
+      if (existing) {
+        const currentQ = typeof existing.cantidad === 'number' ? existing.cantidad : 0;
+        if (currentQ + 1 > prod.stock) {
+          alert(`Stock insuficiente. El máximo disponible para ${prod.nombre} es ${prod.stock}.`);
+          return prevCart;
+        }
+        return prevCart.map(item => 
+          item.producto.id === prod.id 
+            ? { ...item, cantidad: currentQ + 1 }
+            : item
+        );
+      } else {
+        if (prod.stock < 1) {
+          alert(`El producto ${prod.nombre} se encuentra agotado.`);
+          return prevCart;
+        }
+        return [...prevCart, { producto: prod, cantidad: 1 }];
       }
-      setCart(cart.map(item => 
-        item.producto.id === prod.id 
-          ? { ...item, cantidad: currentQ + 1 }
-          : item
-      ));
-    } else {
-      if (prod.stock < 1) {
-        alert(`El producto ${prod.nombre} se encuentra agotado.`);
-        return;
-      }
-      setCart([...cart, { producto: prod, cantidad: 1 }]);
-    }
+    });
   };
 
   const removeFromCart = (idProducto: string | number) => {
-    setCart(cart.filter(item => item.producto.id !== idProducto));
+    setCart(prevCart => prevCart.filter(item => item.producto.id !== idProducto));
   };
 
   const updateCartQuantity = (idProducto: string, newQuantity: number | '') => {
-    if (typeof newQuantity === 'number' && newQuantity < 0) return;
-    
-    setCart(cart.map(item => {
+    setCart(prevCart => prevCart.map(item => {
       if (item.producto.id === idProducto) {
         if (typeof newQuantity === 'number' && newQuantity > item.producto.stock) {
           alert(`Stock insuficiente. El máximo disponible para ${item.producto.nombre} es ${item.producto.stock}.`);
